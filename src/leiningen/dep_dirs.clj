@@ -2,7 +2,8 @@
   (:require [clojure.tools.namespace.file :refer [clojure-file?
                                                   add-files]]
             [clojure.java.io :refer [as-file]]
-            [clojure.pprint :refer [pprint]]))
+            [clojure.pprint :refer [pprint]]
+            [leiningen.core.main :refer [abort]]))
 
 (defn- find-files [directories]
   (->> directories
@@ -45,5 +46,7 @@
         allowed-dirs (-> project
                          :dep-dirs
                          :allowed)]
-    (if (check-for-violations dependencies allowed-dirs) 1 0)
-    (flush)))
+    (let [v? (check-for-violations dependencies allowed-dirs)]
+      (flush)
+      (when v?
+        (abort "Violoations found")))))

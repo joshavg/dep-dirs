@@ -6,4 +6,7 @@
   :eval-in-leiningen true
   :dependencies [[org.clojure/tools.namespace "0.2.11"]]
   :dep-dirs {:allowed
-             {gitwatch-cloj.core [gitwatch-cloj.config]}})
+             {gitwatch-cloj.core [gitwatch-cloj.config]
+              leiningen.dep-dirs [leiningen.core.main
+                                  clojure.tools.namespace.file
+                                  clojure.java.io]}})
