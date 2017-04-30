@@ -35,18 +35,38 @@
           false
           dependencies))
 
+(defn filter-external-ns
+  [deps internal-ns ignore-external]
+  (if ignore-external
+    (reduce
+      (fn [newdeps entry]
+        (let [[dpt dpdcs] entry]
+          (assoc
+            newdeps
+            dpt
+            (filter #(some #{%} internal-ns) dpdcs))))
+      {}
+      deps)
+    deps))
+
 (defn dep-dirs
   [project & args]
-  (let [all-deps (->> (:source-paths project)
+  (let [ignore-external (-> project
+                            :dep-dirs
+                            (get :ignore-external true))
+        all-deps (->> (:source-paths project)
                       (find-files)
                       (add-files {}))
+        internal-ns (:clojure.tools.namespace.track/load
+                      all-deps)
         dependencies (-> all-deps
                          :clojure.tools.namespace.track/deps
-                         :dependencies)
+                         :dependencies
+                         (filter-external-ns internal-ns ignore-external))
         allowed-dirs (-> project
                          :dep-dirs
-                         :allowed)]
+                         (get :allowed {}))]
     (let [v? (check-for-violations dependencies allowed-dirs)]
       (flush)
       (when v?
-        (abort "Violoations found")))))
+        (abort)))))
